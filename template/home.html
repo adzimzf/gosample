@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Bootstrap Example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="col-md-12">
+            <div class="col-md-5">
+                <h2>Visitor Count : {{.UCount}}</h2>
+            </div>
+            <div class="col-md-5">
+                <div class="col-md-5">
+                    Nama
+                    <input type="text" class="form-control" id="ftr-name">
+                </div>
+            </div>
+        </div>
+
+        <p>The .table class adds basic styling (light padding and only horizontal dividers) to a table:</p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>MSISDN</th>
+                    <th>Email</th>
+                    <th>Birth Date</th>
+                    <th>Created Time</th>
+                    <th>Update Time</th>
+                    <th>User Age</th>
+                </tr>
+            </thead>
+            <tbody id="tb-body">
+                {{range .User}}
+                <tr>
+                    <td>{{.ID}}</td>
+                    <td>{{.Fullname}}</td>
+                    <td>{{.MSISDN}}</td>
+                    <td>{{.Email}}</td>
+                    <td></td>
+                    <td>{{.CreateTime}}</td>
+                    <td>{{.UpdateTime}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+        <input type="hidden" id="page" value="1">
+        <ul class="pagination">
+            <li id="prev"><a>Prev</a></li>
+            <li id="next"><a>Next</a></li>
+        </ul>
+    </div>
+
+</body>
+<script>
+    $(function() {
+        $("#ftr-name").keyup(function() {
+            $.ajax({
+                "type": "get",
+                "url": "/filter?nama=" + $(this).val(),
+                "success": function(result) {
+                    result = $.parseJSON(result)
+                    if (result.data != null) {
+                        renderData(result.data)
+                    } else {
+                        renderNoData()
+                    }
+                },
+                "error": function() {
+                    console.log("err")
+                }
+            })
+        })
+
+        function renderData(data) {
+            $("#tb-body").html("")
+            $.each(data, function(index, val) {
+                var myvar = '<tr>' +
+                    '                    <td>' + val.ID + '</td>' +
+                    '                    <td>' + val.Fullname + '</td>' +
+                    '                    <td>' + val.MSISDN + '</td>' +
+                    '                    <td>' + val.Email + '</td>' +
+                    '                    <td></td>' +
+                    '                    <td>' + val.CreateTime + '</td>' +
+                    '                    <td>' + val.UpdateTime + '</td>' +
+                    '                </tr>';
+                $("#tb-body").append(myvar)
+            })
+        }
+
+        function renderNoData() {
+            ff = '<tr><td colspan=\'7\' class=\'text-center\'>tidak ada data</td></tr>';
+            $("#tb-body").html(ff)
+        }
+
+        $("#next").click(function() {
+            nowPage = $("#page").val()
+            reqPaginate(parseInt(nowPage) + 1)
+        })
+        $("#prev").click(function() {
+            nowPage = $("#page").val()
+            reqPaginate(parseInt(nowPage) - 1)
+        })
+
+        function reqPaginate(page) {
+            $.ajax({
+                "type": "get",
+                "url": "/paginate?page=" + page,
+                "success": function(result) {
+                    result = $.parseJSON(result)
+                    if (result.data != null) {
+                        renderData(result.data)
+                    } else {
+                        renderNoData()
+                    }
+                    $("#page").val(page)
+                },
+                "error": function() {
+                    console.log("err")
+                }
+            })
+        }
+    })
+</script>
+
+</html>
